@@ -9,15 +9,15 @@ Deployment on dokku
 We follow the [Dokku image deployment using tags](http://dokku.viewdocs.io/dokku/deployment/methods/images/#deploying-from-a-docker-registry) approach.
 
 ```
-dokku apps:create elasticsearch
+dokku apps:create elasticsearch-0.90
 ```
 
 ```
-docker pull openup/elasticsearch:latest
+docker pull openup/elasticsearch-0.90:latest
 ```
 
 ```
-docker tag openup/elasticsearch:latest dokku/elasticsearch:latest
+docker tag openup/elasticsearch-0.90:latest dokku/elasticsearch-0.90:latest
 ```
 
 Configure elasticsearch to use enough RAM - configure this according
@@ -25,19 +25,19 @@ to the server and your needs, and leave some room for the operating system. E.g.
 machine with 4GB RAM, try minimum 1g, maximum 3G.
 
 ```
-dokku config:set elasticsearch ES_MIN_MEM=1g ES_MAX_MEM=3g
+dokku config:set elasticsearch-0.90 ES_MIN_MEM=1g ES_MAX_MEM=3g
 ```
 
 Map out the data directory to the host to persist across container instances
 
 ```
-dokku docker-options:set elasticsearch deploy,run -v /var/elasticsearch/data:/elasticsearch/data
+dokku docker-options:add elasticsearch-0.90 deploy,run -v /var/elasticsearch-0.90/data:/elasticsearch/data
 ```
 
 Now you can depoy the app
 
 ```
-dokku tags:deploy elasticsearch latest
+dokku tags:deploy elasticsearch-0.90 latest
 ```
 
 If you run an app on the same server that needs to use elasticsearch, you can
