@@ -1,7 +1,6 @@
 elasticsearch 0.90.13 for ancient apps
 ===================================
 
-Elasticsearch must **NOT** be exposed to the internet without authentication/authorization in front. We tend to do that using firewall rules that allow only access for specific servers that we control. Ensure that port 9200 and 9300 are closed on the server for anyone except the servers we allow. Ensure that you don't proxy open ports to elasticsearch's ports.
 
 Deployment on dokku
 -------------------
@@ -10,6 +9,12 @@ We follow the [Dokku image deployment using tags](http://dokku.viewdocs.io/dokku
 
 ```
 dokku apps:create elasticsearch-0.90
+```
+
+DISABLE PROXYING PUBLIC REQUESTS: Elasticsearch must **NOT** be exposed to the internet without authentication/authorization in front.
+
+```
+dokku proxy:disable elasticsearch-0.90
 ```
 
 ```
@@ -52,4 +57,36 @@ Assuming your app takes an environment variable ELASTICSEARCH_URL
 
 ```
 dokku config:set myapp ELASTICSEARCH_URL=elasticsearch:9200
+```
+
+In a single-node cluster, replicas will never be assigned, so status will always be yellow.
+
+To disable replicas and get status green, set number of replicas to zero:
+
+```
+docker exec -ti elasticsearch-0.90.web.1 bash
+root@812adf00a96e:/# curl -XPUT localhost:9200/_settings -d '{ "number_of_replicas" : 0 } }'
+```
+
+Troubleshooting
+---------------
+
+### Unallocated shards
+
+elasticsearch 0.90 seems to fail to allocate shards wen it restarts. Perhaps because of corruption. This is especially going to be an issue whe we run it as a single-node cluster.
+
+The quickest fix is just to rebuild your index, which will replace and allocate all chards when the index is recreated.
+
+You can also force those shards to be allocated to the one node, but their data will be lost. If you can build the index without destroying and recreating it, this is the approach with the least disruption.
+
+Check the node name - (a string like `fjuZTiNVQQSWX4Olf7rmBg1`) and which shards are unassigned (an integer betwee 0 and 5)
+
+```
+curl -XGET 'http://localhost:9200/_cluster/state?pretty=true'
+```
+
+Assign each unassigned shard manually, replacing the node ID and shard ID in the following command
+
+```
+curl -XPOST 'localhost:9200/_cluster/reroute' -d '{"commands": [{"allocate": {"index": "pombola","shard": 1,"node": "fjuZTiNVQQSWX4Olf7rmBg1","allow_primary": true}}]}'
 ```
