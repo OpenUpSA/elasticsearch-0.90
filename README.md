@@ -50,7 +50,7 @@ set up a consistent hostname for elasticsearch by linking the containers.
 **NOTE** this means your app won't start unless elasticsearch is running.
 
 ```
-dokku docker-options:set myapp deploy,run --link elasticsearch.web.1:elasticsearch
+dokku docker-options:add myapp deploy,run --link elasticsearch.web.1:elasticsearch
 ```
 
 Assuming your app takes an environment variable ELASTICSEARCH_URL
