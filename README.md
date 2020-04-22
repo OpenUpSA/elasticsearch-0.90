@@ -65,7 +65,7 @@ To disable replicas and get status green, set number of replicas to zero:
 
 ```
 docker exec -ti elasticsearch-0.90.web.1 bash
-root@812adf00a96e:/# curl -XPUT localhost:9200/_settings -d '{ "number_of_replicas" : 0 } }'
+root@812adf00a96e:/# curl -XPUT localhost:9200/_settings -d '{ "index": { "number_of_replicas" : 0 } }'
 ```
 
 Troubleshooting
